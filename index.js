@@ -44,9 +44,6 @@ io.on('connection', function(socket){
   });
 
   socket.on('chat message1', function(msg){
-			if(msg=="help"){
-				console.log("Entered");
-			}
 			io.emit('chat message1', msg );
 			console.log('message: ' + msg);
 	});
