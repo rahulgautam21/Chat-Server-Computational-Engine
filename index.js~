@@ -2,9 +2,31 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var wolfram = require('wolfram-alpha').createClient("4GJ2YK-Q4QLHV8XPV");
+var os = require('os');
+var ifaces = os.networkInterfaces();
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
+});
+
+Object.keys(ifaces).forEach(function (ifname) {
+  var alias = 0;
+
+  ifaces[ifname].forEach(function (iface) {
+    if ('IPv4' !== iface.family || iface.internal !== false) {
+      // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+      return;
+    }
+
+    if (alias >= 1) {
+      // this single interface has multiple ipv4 addresses
+      console.log(ifname + ':' + alias, iface.address);
+    } else {
+      // this interface has only one ipv4 adress
+      console.log(ifname, iface.address);
+    }
+    ++alias;
+  });
 });
 
 io.on('connection', function(socket){
@@ -44,14 +66,11 @@ io.on('connection', function(socket){
   });
 
   socket.on('chat message1', function(msg){
-			if(msg=="help"){
-				console.log("Entered");
-			}
 			io.emit('chat message1', msg );
 			console.log('message: ' + msg);
 	});
 });
 
 http.listen(3000, function(){
-  console.log('listening on *:3000');
+  console.log('listening on port:3000');
 });
